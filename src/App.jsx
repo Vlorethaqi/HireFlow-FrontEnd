@@ -1,4 +1,9 @@
 import { useEffect, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import Jobs from "./pages/Jobs";
+import Skills from "./pages/Skills";
+import Departments from "./pages/Departments";
+
 
 function App() {
   const [users, setUsers] = useState([]);
@@ -50,39 +55,65 @@ function App() {
 
   return (
     <div>
-      <h1>HireFlow Users</h1>
 
-      {/* INPUTS */}
-      <input
-        type="text"
-        placeholder="Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      {/* NAVBAR për 3 module */}
+      <nav style={{ display: "flex", gap: "15px", padding: "10px" }}>
+        <Link to="/jobs">Jobs</Link>
+        <Link to="/skills">Skills</Link>
+        <Link to="/departments">Departments</Link>
+      </nav>
 
-      <input
-        type="text"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <Routes>
 
-      <button onClick={addUser}>Add User</button>
+        {/* USERS PAGE (DEFAULT) */}
+        <Route
+          path="/"
+          element={
+            <div>
+              <h1>HireFlow Users</h1>
 
-      <hr />
+              {/* INPUTS */}
+              <input
+                type="text"
+                placeholder="Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
 
-      {/* USERS LIST */}
-      {users.map((user) => (
-        <div key={user.id}>
-          <p>{user.name} - {user.email}</p>
+              <input
+                type="text"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
 
-          <button onClick={() => deleteUser(user.id)}>
-            Delete
-          </button>
-        </div>
-      ))}
+              <button onClick={addUser}>Add User</button>
+
+              <hr />
+
+              {/* USERS LIST */}
+              {users.map((user) => (
+                <div key={user.id}>
+                  <p>{user.name} - {user.email}</p>
+                  <button onClick={() => deleteUser(user.id)}>
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          }
+        />
+
+        {/* ROUTES */}
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/skills" element={<Skills />} />
+        <Route path="/departments" element={<Departments />} />
+
+      </Routes>
+
     </div>
   );
 }
+
 
 export default App;

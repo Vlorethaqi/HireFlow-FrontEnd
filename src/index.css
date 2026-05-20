@@ -109,3 +109,18 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+.nav {
+  display: flex;
+  gap: 20px;
+  background: #111;
+  padding: 15px;
+}
+
+.nav a {
+  color: white;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: #00bcd4;
+}
