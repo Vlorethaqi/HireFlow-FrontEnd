@@ -27,6 +27,8 @@ export default function CreateCompany() {
       alert(res.message);
     } else {
       localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.admin));
+      window.dispatchEvent(new Event("authChange"));
       alert("Company created successfully!");
     }
   };

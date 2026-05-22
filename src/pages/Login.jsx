@@ -20,6 +20,8 @@ export default function Login() {
 
       // SAVE TOKEN
       localStorage.setItem("token", res.token);
+      localStorage.setItem("user", JSON.stringify(res.user));
+      window.dispatchEvent(new Event("authChange"));
     }
   };
 

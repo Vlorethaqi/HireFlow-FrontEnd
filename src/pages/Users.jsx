@@ -1,14 +1,21 @@
 import { useEffect, useState } from "react";
-import { getUsers, createUser, deleteUser } from "../services/userService";
+import {
+  getUsers,
+  createUser,
+  updateUser,
+  deleteUser
+} from "../services/userService";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("WORKER");
+  const [editId, setEditId] = useState(null);
 
   const loadUsers = async () => {
-    const data = await getUsers();
-    setUsers(Array.isArray(data) ? data : []);
+    const res = await getUsers();
+    setUsers(Array.isArray(res.data) ? res.data : []);
   };
 
   useEffect(() => {
@@ -16,15 +23,43 @@ export default function Users() {
   }, []);
 
   const handleAdd = async () => {
-    await createUser({
+    const res = editId
+      ? await updateUser(editId, {
+        name,
+        email,
+        role
+      })
+      : await createUser({
       name,
       email,
+      role,
       password: "123456"
     });
 
+    if (res.success === false) {
+      alert(res.message);
+      return;
+    }
+
     setName("");
     setEmail("");
+    setRole("WORKER");
+    setEditId(null);
     loadUsers();
+  };
+
+  const handleEdit = (user) => {
+    setEditId(user.id);
+    setName(user.name || "");
+    setEmail(user.email || "");
+    setRole(user.role || "WORKER");
+  };
+
+  const handleCancel = () => {
+    setName("");
+    setEmail("");
+    setRole("WORKER");
+    setEditId(null);
   };
 
   const handleDelete = async (id) => {
@@ -48,16 +83,41 @@ export default function Users() {
         onChange={(e) => setEmail(e.target.value)}
       />
 
-      <button onClick={handleAdd}>Add</button>
+      <select
+        value={role}
+        onChange={(e) => setRole(e.target.value)}
+      >
+        <option value="WORKER">WORKER</option>
+        <option value="HR">HR</option>
+      </select>
+
+      <button onClick={handleAdd}>
+        {editId ? "Update" : "Add"}
+      </button>
+
+      {editId && (
+        <button onClick={handleCancel}>
+          Cancel
+        </button>
+      )}
 
       <hr />
 
       {users.map((u) => (
         <div key={u.id}>
-          {u.name} - {u.email}
-          <button onClick={() => handleDelete(u.id)}>
-            Delete
-          </button>
+          {u.name} - {u.email} - {u.role}
+
+          {u.role !== "ADMIN" && (
+            <>
+              <button onClick={() => handleEdit(u)}>
+                Edit
+              </button>
+
+              <button onClick={() => handleDelete(u.id)}>
+                Delete
+              </button>
+            </>
+          )}
         </div>
       ))}
     </div>
