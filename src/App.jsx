@@ -31,10 +31,26 @@ function App() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  const getUsers = () => {
+const getUsers = () => {
     fetch("http://localhost:3000/users")
-      .then((res) => res.json())
-      .then((data) => setUsers(data));
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`Gabim nga serveri: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+       
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else {
+          setUsers([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Ndodhi një gabim gjatë marrjes së përdoruesve:", error);
+        setUsers([]); 
+      });
   };
 
   useEffect(() => {
