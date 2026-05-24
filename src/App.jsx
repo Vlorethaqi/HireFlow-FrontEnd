@@ -1,17 +1,14 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, NavLink } from "react-router-dom";
 import Jobs from "./pages/Jobs";
 import Skills from "./pages/Skills";
 import Departments from "./pages/Departments";
 
-
 function App() {
   const [users, setUsers] = useState([]);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  // GET USERS
   const getUsers = () => {
     fetch("http://localhost:3000/users")
       .then((res) => res.json())
@@ -22,98 +19,131 @@ function App() {
     getUsers();
   }, []);
 
-  // ADD USER
   const addUser = async () => {
+    if (!name.trim() || !email.trim()) {
+      return;
+    }
+
     await fetch("http://localhost:3000/users", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name,
         email,
-        password: "123456"
-      })
+        password: "123456",
+      }),
     });
 
     setName("");
     setEmail("");
+    getUsers();
+  };
+
+  const deleteUser = async (id) => {
+    await fetch(`http://localhost:3000/users/${id}`, {
+      method: "DELETE",
+    });
 
     getUsers();
   };
 
-  // DELETE USER
-  const deleteUser = async (id) => {
-    console.log("Deleting ID:", id);
-
-    await fetch(`http://localhost:3000/users/${id}`, { //ketu dergojme request ne backend
-      method: "DELETE"
-    });
-
-    getUsers();//rifreskon listen
-  };
-
   return (
-    <div>
+    <div className="app-shell">
+      <header className="app-header">
+        <NavLink to="/" className="app-brand" aria-label="HireFlow home">
+          <span className="app-brand-mark">HF</span>
+          <span>
+            <strong>HireFlow</strong>
+            <small>Recruitment Dashboard</small>
+          </span>
+        </NavLink>
 
-      {/* NAVBAR për 3 module */}
-      <nav style={{ display: "flex", gap: "15px", padding: "10px" }}>
-        <Link to="/jobs">Jobs</Link>
-        <Link to="/skills">Skills</Link>
-        <Link to="/departments">Departments</Link>
-      </nav>
+        <nav className="app-nav" aria-label="Main navigation">
+          <NavLink to="/" end>
+            Users
+          </NavLink>
+          <NavLink to="/jobs">Jobs</NavLink>
+          <NavLink to="/skills">Skills</NavLink>
+          <NavLink to="/departments">Departments</NavLink>
+        </nav>
+      </header>
 
       <Routes>
-
-        {/* USERS PAGE (DEFAULT) */}
         <Route
           path="/"
           element={
-            <div>
-              <h1>HireFlow Users</h1>
+            <main className="management-page">
+              <section className="management-header">
+                <div>
+                  <p className="management-eyebrow">Team access</p>
+                  <h1 className="management-title">Users</h1>
+                  <p className="management-subtitle">
+                    Manage people who can access the HireFlow workspace.
+                  </p>
+                </div>
+              </section>
 
-              {/* INPUTS */}
-              <input
-                type="text"
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <section className="management-panel">
+                <div className="management-form">
+                  <input
+                    className="management-input"
+                    type="text"
+                    placeholder="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
 
-              <input
-                type="text"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                  <input
+                    className="management-input"
+                    type="email"
+                    placeholder="Email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
 
-              <button onClick={addUser}>Add User</button>
-
-              <hr />
-
-              {/* USERS LIST */}
-              {users.map((user) => (
-                <div key={user.id}>
-                  <p>{user.name} - {user.email}</p>
-                  <button onClick={() => deleteUser(user.id)}>
-                    Delete
+                  <button
+                    className="management-button management-button-primary"
+                    onClick={addUser}
+                    type="button"
+                  >
+                    Add User
                   </button>
                 </div>
-              ))}
-            </div>
+              </section>
+
+              <section className="management-list">
+                {users.map((user) => (
+                  <article key={user.id} className="management-card management-row-card">
+                    <div>
+                      <h2 className="management-card-title">{user.name}</h2>
+                      <p className="management-muted">{user.email}</p>
+                    </div>
+                    <button
+                      className="management-button management-button-danger"
+                      onClick={() => deleteUser(user.id)}
+                      type="button"
+                    >
+                      Delete
+                    </button>
+                  </article>
+                ))}
+
+                {users.length === 0 && (
+                  <p className="management-muted">No users have been added yet.</p>
+                )}
+              </section>
+            </main>
           }
         />
 
-        {/* ROUTES */}
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/skills" element={<Skills />} />
         <Route path="/departments" element={<Departments />} />
-
       </Routes>
-
     </div>
   );
 }
-
 
 export default App;
