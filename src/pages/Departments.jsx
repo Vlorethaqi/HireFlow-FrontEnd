@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import api from "../services/api";
+import "./management-pages.css";
 
 const DepartmentsContext = createContext(null);
 
@@ -66,88 +67,37 @@ function DepartmentsContent() {
   const { departments, search, setSearch, loading, error } = useDepartments();
 
   return (
-    <main style={styles.page}>
-      <section style={styles.header}>
+    <main className="management-page">
+      <section className="management-header">
         <div>
-          <h1 style={styles.title}>Departments</h1>
-          <p style={styles.subtitle}>Browse company departments connected to job postings.</p>
+          <h1 className="management-title">Departments</h1>
+          <p className="management-subtitle">Browse company departments connected to job postings.</p>
         </div>
         <input
-          style={styles.search}
+          className="management-input"
           placeholder="Search departments"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </section>
 
-      {error && <p style={styles.error}>{error}</p>}
-      {loading && <p style={styles.muted}>Loading departments...</p>}
+      {error && <p className="management-error">{error}</p>}
+      {loading && <p className="management-muted">Loading departments...</p>}
 
       {!loading && (
-        <section style={styles.grid}>
+        <section className="management-grid">
           {departments.map((department) => (
-            <article key={department.id} style={styles.card}>
-              <h2 style={styles.cardTitle}>{department.name}</h2>
-              <p style={styles.muted}>Company ID: {department.companyId}</p>
+            <article key={department.id} className="management-card">
+              <h2 className="management-card-title">{department.name}</h2>
+              <p className="management-muted">Company ID: {department.companyId}</p>
             </article>
           ))}
 
-          {departments.length === 0 && <p style={styles.muted}>No departments found.</p>}
+          {departments.length === 0 && <p className="management-muted">No departments found.</p>}
         </section>
       )}
     </main>
   );
 }
-
-const styles = {
-  page: {
-    maxWidth: "1000px",
-    margin: "0 auto",
-    padding: "24px",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "16px",
-    alignItems: "flex-start",
-    marginBottom: "18px",
-  },
-  title: {
-    margin: 0,
-    fontSize: "32px",
-  },
-  subtitle: {
-    margin: "8px 0 0",
-    color: "#5f6b7a",
-  },
-  search: {
-    minHeight: "40px",
-    minWidth: "240px",
-    padding: "8px 10px",
-    border: "1px solid #d6dde6",
-    borderRadius: "6px",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "12px",
-  },
-  card: {
-    padding: "16px",
-    border: "1px solid #e1e7ef",
-    borderRadius: "8px",
-    background: "#fff",
-  },
-  cardTitle: {
-    margin: "0 0 8px",
-    fontSize: "20px",
-  },
-  muted: {
-    color: "#6b7785",
-  },
-  error: {
-    color: "#b42318",
-  },
-};
 
 export default Departments;

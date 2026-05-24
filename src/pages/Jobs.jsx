@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import api from "../services/api";
+import "./management-pages.css";
 
 const JobsContext = createContext(null);
 
@@ -103,38 +104,38 @@ function JobsContent() {
   const { jobs, pagination, loading, error, filters, updateFilter, clearFilters } = useJobs();
 
   return (
-    <main style={styles.page}>
-      <section style={styles.header}>
+    <main className="management-page">
+      <section className="management-header">
         <div>
-          <h1 style={styles.title}>Jobs</h1>
-          <p style={styles.subtitle}>Search and filter positions by role, location, type, status, and skill.</p>
+          <h1 className="management-title">Jobs</h1>
+          <p className="management-subtitle">Search and filter positions by role, location, type, status, and skill.</p>
         </div>
-        <button type="button" onClick={clearFilters} style={styles.secondaryButton}>
+        <button type="button" onClick={clearFilters} className="management-button">
           Clear
         </button>
       </section>
 
-      <section style={styles.filters}>
+      <section className="management-filters">
         <input
-          style={styles.input}
+          className="management-input"
           placeholder="Search title or description"
           value={filters.search}
           onChange={(e) => updateFilter("search", e.target.value)}
         />
         <input
-          style={styles.input}
+          className="management-input"
           placeholder="Location"
           value={filters.location}
           onChange={(e) => updateFilter("location", e.target.value)}
         />
         <input
-          style={styles.input}
+          className="management-input"
           placeholder="Skill"
           value={filters.skill}
           onChange={(e) => updateFilter("skill", e.target.value)}
         />
         <select
-          style={styles.input}
+          className="management-select"
           value={filters.status}
           onChange={(e) => updateFilter("status", e.target.value)}
         >
@@ -143,7 +144,7 @@ function JobsContent() {
           <option value="CLOSED">Closed</option>
         </select>
         <select
-          style={styles.input}
+          className="management-select"
           value={filters.employmentType}
           onChange={(e) => updateFilter("employmentType", e.target.value)}
         >
@@ -155,29 +156,29 @@ function JobsContent() {
         </select>
       </section>
 
-      {error && <p style={styles.error}>{error}</p>}
-      {loading && <p style={styles.muted}>Loading jobs...</p>}
+      {error && <p className="management-error">{error}</p>}
+      {loading && <p className="management-muted">Loading jobs...</p>}
 
       {!loading && (
-        <section style={styles.list}>
+        <section className="management-list">
           {jobs.map((job) => (
-            <article key={job.id} style={styles.card}>
+            <article key={job.id} className="management-card">
               <div>
-                <h2 style={styles.cardTitle}>{job.title}</h2>
-                <p style={styles.description}>{job.description}</p>
+                <h2 className="management-card-title">{job.title}</h2>
+                <p className="management-description">{job.description}</p>
               </div>
-              <div style={styles.meta}>
-                <span>{job.location || "No location"}</span>
-                <span>{job.employmentType || "No type"}</span>
-                <span>{job.status || "No status"}</span>
+              <div className="management-meta">
+                <span className="management-pill">{job.location || "No location"}</span>
+                <span className="management-pill">{job.employmentType || "No type"}</span>
+                <span className="management-pill">{job.status || "No status"}</span>
               </div>
             </article>
           ))}
 
-          {jobs.length === 0 && <p style={styles.muted}>No jobs match the selected filters.</p>}
+          {jobs.length === 0 && <p className="management-muted">No jobs match the selected filters.</p>}
 
           {pagination && (
-            <p style={styles.muted}>
+            <p className="management-muted">
               Showing {jobs.length} of {pagination.total} results
             </p>
           )}
@@ -186,83 +187,5 @@ function JobsContent() {
     </main>
   );
 }
-
-const styles = {
-  page: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    padding: "24px",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "16px",
-    alignItems: "flex-start",
-    marginBottom: "18px",
-  },
-  title: {
-    margin: 0,
-    fontSize: "32px",
-  },
-  subtitle: {
-    margin: "8px 0 0",
-    color: "#5f6b7a",
-  },
-  filters: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
-    gap: "10px",
-    marginBottom: "18px",
-  },
-  input: {
-    minHeight: "40px",
-    padding: "8px 10px",
-    border: "1px solid #d6dde6",
-    borderRadius: "6px",
-    background: "#fff",
-  },
-  secondaryButton: {
-    minHeight: "38px",
-    padding: "8px 14px",
-    border: "1px solid #c9d3df",
-    borderRadius: "6px",
-    background: "#fff",
-    cursor: "pointer",
-  },
-  list: {
-    display: "grid",
-    gap: "12px",
-  },
-  card: {
-    display: "grid",
-    gap: "12px",
-    padding: "16px",
-    border: "1px solid #e1e7ef",
-    borderRadius: "8px",
-    background: "#fff",
-  },
-  cardTitle: {
-    margin: "0 0 8px",
-    fontSize: "20px",
-  },
-  description: {
-    margin: 0,
-    color: "#4d5a68",
-    lineHeight: 1.5,
-  },
-  meta: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "8px",
-    color: "#324253",
-    fontSize: "14px",
-  },
-  muted: {
-    color: "#6b7785",
-  },
-  error: {
-    color: "#b42318",
-  },
-};
 
 export default Jobs;
