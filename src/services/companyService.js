@@ -9,7 +9,8 @@ export async function createCompany(data) {
   const res = await fetch(`${API_URL}/companies`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {})
     },
     body: JSON.stringify(data)
   });

@@ -67,7 +67,8 @@
 }
 
 .management-input,
-.management-select {
+.management-select,
+textarea.management-input {
   width: 100%;
   min-width: 170px;
   min-height: 42px;
@@ -79,6 +80,57 @@
   box-shadow: var(--shadow-sm);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.management-field-wide {
+  grid-column: 1 / -1;
+}
+
+textarea.management-input {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.management-inline {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.management-success {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  background: var(--success-soft);
+  color: #147a46;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.management-pre {
+  max-height: 280px;
+  overflow: auto;
+  margin: 0 0 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 13px;
+  text-align: left;
+}
+
+.auth-page {
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .management-input::placeholder {

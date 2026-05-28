@@ -1,90 +1,73 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createCompany } from "../services/companyService";
+import "./management-pages.css";
 
 export default function CreateCompany() {
-  const [name, setName] = useState("");
-  const [companyEmail, setCompanyEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [location, setLocation] = useState("");
-  const [adminName, setAdminName] = useState("");
-  const [adminEmail, setAdminEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const [loggedUser, setLoggedUser] = useState(null);
+  const [message, setMessage] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    companyEmail: "",
+    phone: "",
+    location: "",
+    description: "",
+    password: ""
+  });
 
-  const handleCreateCompany = async () => {
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    setLoggedUser(savedUser ? JSON.parse(savedUser) : null);
+  }, []);
+
+  const updateField = (name, value) => {
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleCreateCompany = async (event) => {
+    event.preventDefault();
+
     const res = await createCompany({
-      name,
-      companyEmail,
-      phone,
-      location,
-      adminName,
-      adminEmail,
-      password
+      ...form,
+      adminName: loggedUser?.name,
+      adminEmail: loggedUser?.email
     });
 
-    console.log("CREATE COMPANY RESPONSE:", res);
-
     if (res.success === false) {
-      alert(res.message);
-    } else {
-      localStorage.setItem("token", res.token);
-      localStorage.setItem("user", JSON.stringify(res.admin));
-      window.dispatchEvent(new Event("authChange"));
-      alert("Company created successfully!");
+      setMessage(res.message);
+      return;
     }
+
+    localStorage.setItem("token", res.token);
+    localStorage.setItem("user", JSON.stringify(res.user || res.admin));
+    window.dispatchEvent(new Event("authChange"));
+    navigate("/companies");
   };
 
   return (
-    <div>
-      <h1>Create Company</h1>
+    <main className="management-page">
+      <section className="management-header">
+        <div>
+          <h1 className="management-title">Create Company</h1>
+          <p className="management-subtitle">
+            Company krijohet nga user-i i kycur dhe ai user behet admin i kompanise.
+          </p>
+        </div>
+      </section>
 
-      <input
-        placeholder="Company name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      {message && <p className="management-error">{message}</p>}
 
-      <input
-        placeholder="Company email"
-        value={companyEmail}
-        onChange={(e) => setCompanyEmail(e.target.value)}
-      />
-
-      <input
-        placeholder="Phone"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-
-      <input
-        placeholder="Location"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-      />
-
-      <hr />
-
-      <input
-        placeholder="Admin name"
-        value={adminName}
-        onChange={(e) => setAdminName(e.target.value)}
-      />
-
-      <input
-        placeholder="Admin email"
-        value={adminEmail}
-        onChange={(e) => setAdminEmail(e.target.value)}
-      />
-
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button onClick={handleCreateCompany}>
-        Create Company
-      </button>
-    </div>
+      <form className="management-form" onSubmit={handleCreateCompany}>
+        <input className="management-input" placeholder="Company name" value={form.name} onChange={(e) => updateField("name", e.target.value)} required />
+        <input className="management-input" placeholder="Company email" value={form.companyEmail} onChange={(e) => updateField("companyEmail", e.target.value)} required />
+        <input className="management-input" placeholder="Phone" value={form.phone} onChange={(e) => updateField("phone", e.target.value)} />
+        <input className="management-input" placeholder="Location" value={form.location} onChange={(e) => updateField("location", e.target.value)} />
+        <input className="management-input" placeholder="Admin email" value={loggedUser?.email || ""} disabled />
+        <input className="management-input" type="password" placeholder="Password only if creating admin without logged user" value={form.password} onChange={(e) => updateField("password", e.target.value)} />
+        <textarea className="management-input management-field-wide" placeholder="Description" value={form.description} onChange={(e) => updateField("description", e.target.value)} />
+        <button className="management-button management-button-primary" type="submit">Create Company</button>
+      </form>
+    </main>
   );
 }

@@ -153,6 +153,17 @@ p {
   box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
 }
 
+.nav-button {
+  min-height: 38px;
+  padding: 8px 13px;
+  border-radius: 7px;
+  background: var(--danger-soft);
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 750;
+}
+
 @media (max-width: 760px) {
   .app-shell {
     width: min(100% - 20px, 1160px);

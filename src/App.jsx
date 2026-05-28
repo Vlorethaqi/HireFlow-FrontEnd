@@ -1,24 +1,22 @@
 import { useEffect, useState } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  NavLink,
-  Navigate
-} from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import Users from "./pages/Users.jsx";
+import CandidateProfile from "./pages/CandidateProfile.jsx";
 import Companies from "./pages/Companies.jsx";
 import CreateCompany from "./pages/CreateCompany.jsx";
-
-import Jobs from "./pages/Jobs";
-import Skills from "./pages/Skills";
+import CreateJob from "./pages/CreateJob.jsx";
 import Departments from "./pages/Departments";
+import HRReview from "./pages/HRReview.jsx";
+import Jobs from "./pages/Jobs";
+import Login from "./pages/Login.jsx";
+import MyApplications from "./pages/MyApplications.jsx";
+import Register from "./pages/Register.jsx";
+import SavedJobs from "./pages/SavedJobs.jsx";
+import Skills from "./pages/Skills";
+import Users from "./pages/Users.jsx";
+import "./index.css";
 
 function App() {
-  // ================= AUTH STATE =================
   const [user, setUser] = useState(null);
 
   const loadUser = () => {
@@ -26,37 +24,8 @@ function App() {
     setUser(savedUser ? JSON.parse(savedUser) : null);
   };
 
-  // ================= USERS CRUD STATE =================
-  const [users, setUsers] = useState([]);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-
-const getUsers = () => {
-    fetch("http://localhost:3000/users")
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`Gabim nga serveri: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-       
-        if (Array.isArray(data)) {
-          setUsers(data);
-        } else {
-          setUsers([]);
-        }
-      })
-      .catch((error) => {
-        console.error("Ndodhi një gabim gjatë marrjes së përdoruesve:", error);
-        setUsers([]); 
-      });
-  };
-
   useEffect(() => {
     loadUser();
-    getUsers();
-
     window.addEventListener("authChange", loadUser);
 
     return () => {
@@ -65,10 +34,11 @@ const getUsers = () => {
   }, []);
 
   const isAdmin = user?.role === "ADMIN";
+  const canManageCompany = ["ADMIN", "HR"].includes(user?.role);
 
-  const adminRoute = (page) => {
-    return isAdmin ? page : <Navigate to="/login" />;
-  };
+  const authRoute = (page) => (user ? page : <Navigate to="/login" />);
+  const adminRoute = (page) => (isAdmin ? page : <Navigate to="/login" />);
+  const companyRoute = (page) => (canManageCompany ? page : <Navigate to="/login" />);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -76,116 +46,78 @@ const getUsers = () => {
     setUser(null);
   };
 
-  // ================= USERS ACTIONS =================
-  const addUser = async () => {
-    if (!name.trim() || !email.trim()) return;
-
-    await fetch("http://localhost:3000/users", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name,
-        email,
-        password: "123456",
-      }),
-    });
-
-    setName("");
-    setEmail("");
-    getUsers();
-  };
-
-  const deleteUser = async (id) => {
-    await fetch(`http://localhost:3000/users/${id}`, {
-      method: "DELETE",
-    });
-
-    getUsers();
-  };
-
   return (
-    <div>
+    <div className="app-shell">
+      <header className="app-header">
+        <Link className="app-brand" to="/jobs">
+          <span className="app-brand-mark">HF</span>
+          <span>
+            <strong>HireFlow</strong>
+            <small>{user ? `${user.name} - ${user.role}` : "Recruitment system"}</small>
+          </span>
+        </Link>
 
-      {/* AUTH NAV */}
-      <nav>
-        <Link to="/login">Login</Link> |{" "}
-        <Link to="/register">Register</Link> |{" "}
+        <nav className="app-nav">
+          <NavLink to="/jobs">Jobs</NavLink>
 
-        {isAdmin && (
-          <>
-            <Link to="/users">Users</Link> |{" "}
-            <Link to="/companies">Company</Link> |{" "}
-          </>
-        )}
+          {user?.role === "CANDIDATE" && (
+            <>
+              <NavLink to="/profile">Profile</NavLink>
+              <NavLink to="/applications">Application Status</NavLink>
+              <NavLink to="/saved-jobs">Saved Jobs</NavLink>
+            </>
+          )}
 
-        <Link to="/companies/create">Create Company</Link>
+          {user && <NavLink to="/companies/create">Create Company</NavLink>}
 
-        {user && (
-          <>
-            {" | "}
-            <button onClick={handleLogout}>Logout</button>
-          </>
-        )}
-      </nav>
+          {canManageCompany && (
+            <>
+              <NavLink to="/departments">Departments</NavLink>
+              <NavLink to="/jobs/create">Create Job</NavLink>
+              <NavLink to="/hr-review">HR Review</NavLink>
+            </>
+          )}
 
-      {/* APP NAV */}
-      <header>
-        <NavLink to="/">Home</NavLink> |{" "}
-        <NavLink to="/jobs">Jobs</NavLink> |{" "}
-        <NavLink to="/skills">Skills</NavLink> |{" "}
-        <NavLink to="/departments">Departments</NavLink>
+          {isAdmin && (
+            <>
+              <NavLink to="/users">Users</NavLink>
+              <NavLink to="/companies">Company</NavLink>
+            </>
+          )}
+
+          {!user && (
+            <>
+              <NavLink to="/login">Login</NavLink>
+              <NavLink to="/register">Register</NavLink>
+            </>
+          )}
+
+          {user && (
+            <button className="nav-button" type="button" onClick={handleLogout}>
+              Logout
+            </button>
+          )}
+        </nav>
       </header>
 
-      {/* ROUTES */}
       <Routes>
-
-        {/* HOME / USERS CRUD (i koleges) */}
-        <Route
-          path="/"
-          element={
-            <div>
-              <h1>Users Management</h1>
-
-              <input
-                placeholder="Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-
-              <input
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-
-              <button onClick={addUser}>Add User</button>
-
-              {users.map((u) => (
-                <div key={u.id}>
-                  {u.name} - {u.email}
-                  <button onClick={() => deleteUser(u.id)}>
-                    Delete
-                  </button>
-                </div>
-              ))}
-            </div>
-          }
-        />
-
-        {/* AUTH */}
+        <Route path="/" element={<Navigate to="/jobs" />} />
+        <Route path="/jobs" element={<Jobs />} />
+        <Route path="/skills" element={companyRoute(<Skills />)} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* ADMIN */}
+        <Route path="/profile" element={authRoute(<CandidateProfile />)} />
+        <Route path="/applications" element={authRoute(<MyApplications />)} />
+        <Route path="/saved-jobs" element={authRoute(<SavedJobs />)} />
+        <Route path="/companies/create" element={authRoute(<CreateCompany />)} />
+
+        <Route path="/departments" element={companyRoute(<Departments />)} />
+        <Route path="/jobs/create" element={companyRoute(<CreateJob />)} />
+        <Route path="/hr-review" element={companyRoute(<HRReview />)} />
+
         <Route path="/users" element={adminRoute(<Users />)} />
         <Route path="/companies" element={adminRoute(<Companies />)} />
-        <Route path="/companies/create" element={<CreateCompany />} />
-
-        {/* OTHER MODULES (tuat e tuat) */}
-        <Route path="/jobs" element={<Jobs />} />
-        <Route path="/skills" element={<Skills />} />
-        <Route path="/departments" element={<Departments />} />
-
       </Routes>
     </div>
   );
