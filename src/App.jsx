@@ -7,12 +7,12 @@ import CreateCompany from "./pages/CreateCompany.jsx";
 import CreateJob from "./pages/CreateJob.jsx";
 import Departments from "./pages/Departments";
 import HRReview from "./pages/HRReview.jsx";
-import Jobs from "./pages/Jobs";
+import Jobs from "./pages/Jobs.jsx";
 import Login from "./pages/Login.jsx";
-import MyApplications from "./pages/MyApplications.jsx";
+import MyApplications from "./pages/MyApplication.jsx";
 import Register from "./pages/Register.jsx";
 import SavedJobs from "./pages/SavedJobs.jsx";
-import Skills from "./pages/Skills";
+import Skills from "./pages/Skills.jsx";
 import Users from "./pages/Users.jsx";
 import "./index.css";
 
