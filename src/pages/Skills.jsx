@@ -21,7 +21,8 @@ function SkillsProvider({ children }) {
     api.get("/skills")
       .then((res) => {
         if (isActive) {
-          setSkills(res.data);
+          const payload = res.data;
+          setSkills(Array.isArray(payload) ? payload : payload.data || []);
           setError("");
         }
       })

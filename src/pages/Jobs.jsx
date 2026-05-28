@@ -1,5 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import api from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { applyToJob } from "../services/applicationService";
+import { getJobs } from "../services/jobService";
+import { saveJob } from "../services/savedJobService";
 import "./management-pages.css";
 
 const JobsContext = createContext(null);
@@ -30,13 +33,11 @@ function JobsProvider({ children }) {
   useEffect(() => {
     let isActive = true;
 
-    api.get("/jobs", { params: queryParams })
-      .then((res) => {
+    getJobs(queryParams)
+      .then((payload) => {
         if (!isActive) {
           return;
         }
-
-        const payload = res.data;
 
         if (Array.isArray(payload)) {
           setJobs(payload);
@@ -50,7 +51,7 @@ function JobsProvider({ children }) {
       })
       .catch((err) => {
         if (isActive) {
-          setError(err.response?.data?.message || "Jobs could not be loaded.");
+          setError(err.message || "Jobs could not be loaded.");
         }
       })
       .finally(() => {
@@ -102,13 +103,60 @@ function Jobs() {
 
 function JobsContent() {
   const { jobs, pagination, loading, error, filters, updateFilter, clearFilters } = useJobs();
+  const navigate = useNavigate();
+  const [applyMessage, setApplyMessage] = useState("");
+  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const isCandidate = user?.role === "CANDIDATE";
+
+  const handleApply = async (job) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login", { state: { from: "/jobs", applyJobId: job.id } });
+      return;
+    }
+
+    if (!isCandidate) {
+      setApplyMessage("Vetem kandidatet mund te aplikojne.");
+      return;
+    }
+
+    const coverLetter = window.prompt(`Cover letter per ${job.title}`) || "";
+    const res = await applyToJob({
+      jobId: job.id,
+      coverLetter
+    });
+
+    if (res.success === false) {
+      setApplyMessage(res.message || res.error || "Application failed.");
+    } else {
+      setApplyMessage(res.message || "Application sent successfully.");
+    }
+  };
+
+  const handleSave = async (job) => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login", { state: { from: "/jobs" } });
+      return;
+    }
+
+    if (!isCandidate) {
+      setApplyMessage("Vetem kandidatet mund te ruajne pune.");
+      return;
+    }
+
+    const res = await saveJob(job.id);
+    setApplyMessage(res.success === false ? res.message || res.error : "Job saved successfully.");
+  };
 
   return (
     <main className="management-page">
       <section className="management-header">
         <div>
           <h1 className="management-title">Jobs</h1>
-          <p className="management-subtitle">Search and filter positions by role, location, type, status, and skill.</p>
+          <p className="management-subtitle">Shiko pozitat e hapura, apliko ose ruaji per me vone.</p>
         </div>
         <button type="button" onClick={clearFilters} className="management-button">
           Clear
@@ -127,12 +175,6 @@ function JobsContent() {
           placeholder="Location"
           value={filters.location}
           onChange={(e) => updateFilter("location", e.target.value)}
-        />
-        <input
-          className="management-input"
-          placeholder="Skill"
-          value={filters.skill}
-          onChange={(e) => updateFilter("skill", e.target.value)}
         />
         <select
           className="management-select"
@@ -157,6 +199,7 @@ function JobsContent() {
       </section>
 
       {error && <p className="management-error">{error}</p>}
+      {applyMessage && <p className="management-success">{applyMessage}</p>}
       {loading && <p className="management-muted">Loading jobs...</p>}
 
       {!loading && (
@@ -171,6 +214,37 @@ function JobsContent() {
                 <span className="management-pill">{job.location || "No location"}</span>
                 <span className="management-pill">{job.employmentType || "No type"}</span>
                 <span className="management-pill">{job.status || "No status"}</span>
+              </div>
+              {job.Skills?.length > 0 && (
+                <div className="management-meta">
+                  {job.Skills.map((skill) => (
+                    <span key={skill.id} className="management-badge">
+                      {skill.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="management-actions">
+                {isCandidate || !user ? (
+                  <>
+                    <button
+                      type="button"
+                      className="management-button management-button-primary"
+                      onClick={() => handleApply(job)}
+                    >
+                      Apply
+                    </button>
+                    <button
+                      type="button"
+                      className="management-button"
+                      onClick={() => handleSave(job)}
+                    >
+                      Save Job
+                    </button>
+                  </>
+                ) : (
+                  <span className="management-muted">Admin/HR nuk mund te aplikoje ne pune.</span>
+                )}
               </div>
             </article>
           ))}
