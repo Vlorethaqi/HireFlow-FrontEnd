@@ -16,3 +16,12 @@ export async function createJob(data) {
 
   return res.json();
 }
+
+export async function getJobs(params = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== "")
+  );
+  const res = await fetch(`${API_URL}/jobs${query.toString() ? `?${query}` : ""}`);
+
+  return res.json();
+}
