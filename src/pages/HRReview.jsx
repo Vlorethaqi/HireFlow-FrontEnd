@@ -3,37 +3,55 @@ import {
   analyzeApplication,
   createApplicationResponse,
   createApplicationReview,
+  getApplicationStatuses,
   getCompanyApplications,
   updateApplicationStatus
 } from "../services/applicationService";
 import "./management-pages.css";
 
-const statusOptions = [
-  { id: 1, name: "PENDING" },
-  { id: 2, name: "REVIEWED" },
-  { id: 3, name: "INTERVIEW" },
-  { id: 4, name: "ACCEPTED" },
-  { id: 5, name: "REJECTED" }
-];
-
 export default function HRReview() {
   const [applications, setApplications] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [message, setMessage] = useState("");
   const [analysis, setAnalysis] = useState(null);
+  const [reviewForms, setReviewForms] = useState({});
 
   const loadApplications = async () => {
     const res = await getCompanyApplications();
     setApplications(Array.isArray(res.data) ? res.data : []);
   };
 
+  const loadStatuses = async () => {
+    const res = await getApplicationStatuses();
+    setStatuses(Array.isArray(res.data) ? res.data : []);
+  };
+
   useEffect(() => {
-    loadApplications();
+    const timeoutId = window.setTimeout(() => {
+      Promise.all([loadApplications(), loadStatuses()]);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
+  const updateReviewForm = (applicationId, field, value) => {
+    setReviewForms((current) => ({
+      ...current,
+      [applicationId]: {
+        rating: "3",
+        comment: "",
+        statusId: "",
+        ...current[applicationId],
+        [field]: value
+      }
+    }));
+  };
+
   const handleReview = async (application) => {
-    const rating = Number(window.prompt("Rating 1-5", "3") || 3);
-    const comment = window.prompt("Review comment", "") || "";
-    const statusId = Number(window.prompt("Status ID: 1 PENDING, 2 REVIEWED, 3 INTERVIEW, 4 ACCEPTED, 5 REJECTED", "2") || 2);
+    const form = reviewForms[application.id] || {};
+    const statusId = Number(form.statusId || application.statusId);
+    const rating = Number(form.rating || 3);
+    const comment = form.comment || "";
 
     const review = await createApplicationReview({
       applicationId: application.id,
@@ -47,9 +65,15 @@ export default function HRReview() {
       return;
     }
 
-    await updateApplicationStatus(application.id, statusId);
+    const statusUpdate = await updateApplicationStatus(application.id, statusId);
+
+    if (statusUpdate.success === false) {
+      setMessage(statusUpdate.message || statusUpdate.error || "Status could not be updated.");
+      return;
+    }
+
     setMessage("Review and status saved.");
-    loadApplications();
+    await loadApplications();
   };
 
   const handleResponse = async (application) => {
@@ -86,28 +110,59 @@ export default function HRReview() {
       )}
 
       <section className="management-list">
-        {applications.map((application) => (
-          <article className="management-card" key={application.id}>
-            <h2 className="management-card-title">
-              {application.Job?.title || `Application #${application.id}`}
-            </h2>
-            <p className="management-description">{application.coverLetter || "No cover letter"}</p>
-            <div className="management-meta">
-              <span className="management-pill">Status: {application.ApplicationStatus?.name || application.statusId}</span>
-              <span className="management-pill">Candidate profile: {application.candidateProfileId}</span>
-            </div>
-            <div className="management-actions">
-              <button className="management-button" type="button" onClick={() => handleReview(application)}>Review</button>
-              <button className="management-button" type="button" onClick={() => handleResponse(application)}>Response</button>
-              <button className="management-button management-button-primary" type="button" onClick={() => handleAi(application)}>AI Analyze</button>
-            </div>
-          </article>
-        ))}
+        {applications.map((application) => {
+          const form = reviewForms[application.id] || {};
+
+          return (
+            <article className="management-card" key={application.id}>
+              <h2 className="management-card-title">
+                {application.Job?.title || `Application #${application.id}`}
+              </h2>
+              <p className="management-description">{application.coverLetter || "No cover letter"}</p>
+              <div className="management-meta">
+                <span className="management-pill">Status: {application.ApplicationStatus?.name || application.statusId}</span>
+                <span className="management-pill">Candidate profile: {application.candidateProfileId}</span>
+              </div>
+              <div className="management-form">
+                <select
+                  className="management-select"
+                  value={form.rating || "3"}
+                  onChange={(e) => updateReviewForm(application.id, "rating", e.target.value)}
+                >
+                  <option value="1">Rating 1</option>
+                  <option value="2">Rating 2</option>
+                  <option value="3">Rating 3</option>
+                  <option value="4">Rating 4</option>
+                  <option value="5">Rating 5</option>
+                </select>
+                <select
+                  className="management-select"
+                  value={form.statusId || application.statusId || ""}
+                  onChange={(e) => updateReviewForm(application.id, "statusId", e.target.value)}
+                >
+                  <option value="">Status</option>
+                  {statuses.map((status) => (
+                    <option key={status.id} value={status.id}>{status.name}</option>
+                  ))}
+                </select>
+                <input
+                  className="management-input"
+                  placeholder="Review comment"
+                  value={form.comment || ""}
+                  onChange={(e) => updateReviewForm(application.id, "comment", e.target.value)}
+                />
+              </div>
+              <div className="management-actions">
+                <button className="management-button" type="button" onClick={() => handleReview(application)}>Save Review</button>
+                <button className="management-button" type="button" onClick={() => handleResponse(application)}>Response</button>
+                <button className="management-button management-button-primary" type="button" onClick={() => handleAi(application)}>AI Analyze</button>
+              </div>
+            </article>
+          );
+        })}
 
         {applications.length === 0 && <p className="management-muted">No applications yet.</p>}
       </section>
     </main>
   );
 }
-
-export { statusOptions };

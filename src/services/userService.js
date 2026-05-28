@@ -1,27 +1,18 @@
-const API_URL = "http://localhost:3000";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
+import { authFetch } from "./authFetch";
 
 // GET USERS
 export async function getUsers() {
-  const res = await fetch(`${API_URL}/users`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  const res = await authFetch("/users");
 
   return res.json();
 }
 
 // CREATE USER
 export async function createUser(data) {
-  const res = await fetch(`${API_URL}/users`, {
+  const res = await authFetch("/users", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   });
@@ -31,11 +22,10 @@ export async function createUser(data) {
 
 // UPDATE USER
 export async function updateUser(id, data) {
-  const res = await fetch(`${API_URL}/users/${id}`, {
+  const res = await authFetch(`/users/${id}`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   });
@@ -45,11 +35,8 @@ export async function updateUser(id, data) {
 
 // DELETE USER
 export async function deleteUser(id) {
-  const res = await fetch(`${API_URL}/users/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
+  const res = await authFetch(`/users/${id}`, {
+    method: "DELETE"
   });
 
   return res.json();

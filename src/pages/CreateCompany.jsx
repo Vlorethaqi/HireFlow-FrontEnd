@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCompany } from "../services/companyService";
 import "./management-pages.css";
 
 export default function CreateCompany() {
   const navigate = useNavigate();
-  const [loggedUser, setLoggedUser] = useState(null);
+  const [loggedUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [message, setMessage] = useState("");
   const [form, setForm] = useState({
     name: "",
@@ -15,11 +18,6 @@ export default function CreateCompany() {
     description: "",
     password: ""
   });
-
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    setLoggedUser(savedUser ? JSON.parse(savedUser) : null);
-  }, []);
 
   const updateField = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -39,7 +37,8 @@ export default function CreateCompany() {
       return;
     }
 
-    localStorage.setItem("token", res.token);
+    localStorage.setItem("token", res.accessToken || res.token);
+    localStorage.setItem("refreshToken", res.refreshToken);
     localStorage.setItem("user", JSON.stringify(res.user || res.admin));
     window.dispatchEvent(new Event("authChange"));
     navigate("/companies");

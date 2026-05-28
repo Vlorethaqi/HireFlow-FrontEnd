@@ -1,16 +1,11 @@
-const API_URL = "http://localhost:3000";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
+import { authFetch } from "./authFetch";
 
 // CREATE COMPANY + ADMIN
 export async function createCompany(data) {
-  const res = await fetch(`${API_URL}/companies`, {
+  const res = await authFetch("/companies", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {})
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   });
@@ -20,22 +15,17 @@ export async function createCompany(data) {
 
 // GET MY COMPANY
 export async function getMyCompany() {
-  const res = await fetch(`${API_URL}/companies/me`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  const res = await authFetch("/companies/me");
 
   return res.json();
 }
 
 // UPDATE COMPANY
 export async function updateCompany(id, data) {
-  const res = await fetch(`${API_URL}/companies/${id}`, {
+  const res = await authFetch(`/companies/${id}`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   });

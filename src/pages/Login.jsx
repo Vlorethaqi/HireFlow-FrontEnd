@@ -22,7 +22,8 @@ export default function Login() {
     if (res.success === false) {
       setMessage(res.message);
     } else {
-      localStorage.setItem("token", res.token);
+      localStorage.setItem("token", res.accessToken || res.token);
+      localStorage.setItem("refreshToken", res.refreshToken);
       localStorage.setItem("user", JSON.stringify(res.user));
       window.dispatchEvent(new Event("authChange"));
       navigate(location.state?.from || "/jobs");

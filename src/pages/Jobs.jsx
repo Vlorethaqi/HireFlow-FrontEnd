@@ -21,6 +21,7 @@ function JobsProvider({ children }) {
     status: "",
     employmentType: "",
     location: "",
+    departmentName: "",
     skill: "",
   });
 
@@ -80,6 +81,7 @@ function JobsProvider({ children }) {
       status: "",
       employmentType: "",
       location: "",
+      departmentName: "",
       skill: "",
     });
   };
@@ -108,6 +110,40 @@ function JobsContent() {
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const isCandidate = user?.role === "CANDIDATE";
 
+  const chooseCoverLetterFile = () => {
+    return new Promise((resolve) => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = ".txt,text/plain";
+
+      input.onchange = () => {
+        const file = input.files?.[0];
+
+        if (!file) {
+          resolve(null);
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = String(reader.result || "");
+          file.text().then((text) => {
+            resolve({
+              fileName: file.name,
+              mimeType: file.type || "text/plain",
+              contentBase64: result.includes(",") ? result.split(",")[1] : result,
+              text
+            });
+          });
+        };
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(file);
+      };
+
+      input.click();
+    });
+  };
+
   const handleApply = async (job) => {
     const token = localStorage.getItem("token");
 
@@ -121,10 +157,17 @@ function JobsContent() {
       return;
     }
 
-    const coverLetter = window.prompt(`Cover letter per ${job.title}`) || "";
+    const coverLetterFile = await chooseCoverLetterFile();
+
+    if (!coverLetterFile) {
+      setApplyMessage("Please select a cover letter .txt file.");
+      return;
+    }
+
     const res = await applyToJob({
       jobId: job.id,
-      coverLetter
+      coverLetter: coverLetterFile.text,
+      coverLetterFile
     });
 
     if (res.success === false) {
@@ -176,6 +219,12 @@ function JobsContent() {
           value={filters.location}
           onChange={(e) => updateFilter("location", e.target.value)}
         />
+        <input
+          className="management-input"
+          placeholder="Department"
+          value={filters.departmentName}
+          onChange={(e) => updateFilter("departmentName", e.target.value)}
+        />
         <select
           className="management-select"
           value={filters.status}
@@ -212,6 +261,7 @@ function JobsContent() {
               </div>
               <div className="management-meta">
                 <span className="management-pill">{job.location || "No location"}</span>
+                <span className="management-pill">{job.Department?.name || "No department"}</span>
                 <span className="management-pill">{job.employmentType || "No type"}</span>
                 <span className="management-pill">{job.status || "No status"}</span>
               </div>

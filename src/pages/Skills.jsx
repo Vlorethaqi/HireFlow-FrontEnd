@@ -15,8 +15,9 @@ function SkillsProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const loadSkills = () => {
     let isActive = true;
+    setLoading(true);
 
     api.get("/skills")
       .then((res) => {
@@ -40,6 +41,14 @@ function SkillsProvider({ children }) {
     return () => {
       isActive = false;
     };
+  };
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      loadSkills();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const filteredSkills = useMemo(() => {
@@ -52,7 +61,7 @@ function SkillsProvider({ children }) {
 
   return (
     <SkillsContext.Provider
-      value={{ skills: filteredSkills, search, setSearch, category, setCategory, loading, error }}
+      value={{ skills: filteredSkills, search, setSearch, category, setCategory, loading, error, loadSkills, setError }}
     >
       {children}
     </SkillsContext.Provider>
@@ -68,7 +77,23 @@ function Skills() {
 }
 
 function SkillsContent() {
-  const { skills, search, setSearch, category, setCategory, loading, error } = useSkills();
+  const { skills, search, setSearch, category, setCategory, loading, error, loadSkills, setError } = useSkills();
+
+  const handleDelete = async (skill) => {
+    try {
+      const res = await api.delete(`/skills/${skill.id}`);
+
+      if (res.data?.success === false) {
+        setError(res.data.message || "Skill could not be deleted.");
+        return;
+      }
+
+      loadSkills();
+    } catch (err) {
+      setError(err.response?.data?.message || "Skill could not be deleted.");
+      return;
+    }
+  };
 
   return (
     <main className="management-page">
@@ -108,6 +133,15 @@ function SkillsContent() {
               <h2 className="management-card-title">{skill.name}</h2>
               <p className="management-badge">{skill.category || "TECHNICAL"}</p>
               {skill.description && <p className="management-description">{skill.description}</p>}
+              <div className="management-actions">
+                <button
+                  className="management-button management-button-danger"
+                  type="button"
+                  onClick={() => handleDelete(skill)}
+                >
+                  Delete
+                </button>
+              </div>
             </article>
           ))}
 

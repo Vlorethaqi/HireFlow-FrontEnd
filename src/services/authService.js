@@ -25,3 +25,15 @@ export async function login(data) {
 
   return res.json();
 }
+
+export async function refreshToken(refreshToken) {
+  const res = await fetch(`${API_URL}/auth/refresh`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  return res.json();
+}

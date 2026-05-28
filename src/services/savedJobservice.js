@@ -1,15 +1,10 @@
-const API_URL = "http://localhost:3000";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
+import { authFetch } from "./authFetch";
 
 export async function saveJob(jobId) {
-  const res = await fetch(`${API_URL}/saved-jobs`, {
+  const res = await authFetch("/saved-jobs", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`,
     },
     body: JSON.stringify({ jobId }),
   });
@@ -18,21 +13,14 @@ export async function saveJob(jobId) {
 }
 
 export async function getSavedJobs() {
-  const res = await fetch(`${API_URL}/saved-jobs`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
+  const res = await authFetch("/saved-jobs");
 
   return res.json();
 }
 
 export async function unsaveJob(savedJobId) {
-  const res = await fetch(`${API_URL}/saved-jobs/${savedJobId}`, {
+  const res = await authFetch(`/saved-jobs/${savedJobId}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
   });
 
   return res.json();

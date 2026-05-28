@@ -1,18 +1,13 @@
-const API_URL = "http://localhost:3000";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
+import { authFetch } from "./authFetch";
 
 function headers() {
   return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${getToken()}`
+    "Content-Type": "application/json"
   };
 }
 
 export async function applyToJob(data) {
-  const res = await fetch(`${API_URL}/applications/apply`, {
+  const res = await authFetch("/applications/apply", {
     method: "POST",
     headers: headers(),
     body: JSON.stringify(data)
@@ -22,27 +17,19 @@ export async function applyToJob(data) {
 }
 
 export async function getMyApplications() {
-  const res = await fetch(`${API_URL}/applications/me`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  const res = await authFetch("/applications/me");
 
   return res.json();
 }
 
 export async function getCompanyApplications() {
-  const res = await fetch(`${API_URL}/applications/company`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  const res = await authFetch("/applications/company");
 
   return res.json();
 }
 
 export async function updateApplicationStatus(id, statusId) {
-  const res = await fetch(`${API_URL}/applications/${id}/status`, {
+  const res = await authFetch(`/applications/${id}/status`, {
     method: "PUT",
     headers: headers(),
     body: JSON.stringify({ statusId })
@@ -51,8 +38,14 @@ export async function updateApplicationStatus(id, statusId) {
   return res.json();
 }
 
+export async function getApplicationStatuses() {
+  const res = await authFetch("/application-statuses");
+
+  return res.json();
+}
+
 export async function createApplicationReview(data) {
-  const res = await fetch(`${API_URL}/application-reviews`, {
+  const res = await authFetch("/application-reviews", {
     method: "POST",
     headers: headers(),
     body: JSON.stringify(data)
@@ -62,7 +55,7 @@ export async function createApplicationReview(data) {
 }
 
 export async function createApplicationResponse(data) {
-  const res = await fetch(`${API_URL}/application-responses`, {
+  const res = await authFetch("/application-responses", {
     method: "POST",
     headers: headers(),
     body: JSON.stringify(data)
@@ -72,7 +65,7 @@ export async function createApplicationResponse(data) {
 }
 
 export async function analyzeApplication(applicationId) {
-  const res = await fetch(`${API_URL}/ai/analyze-application/${applicationId}`, {
+  const res = await authFetch(`/ai/analyze-application/${applicationId}`, {
     method: "POST",
     headers: headers()
   });

@@ -1,25 +1,16 @@
-const API_URL = "http://localhost:3000";
-
-function getToken() {
-  return localStorage.getItem("token");
-}
+import { authFetch } from "./authFetch";
 
 export async function getMyProfile() {
-  const res = await fetch(`${API_URL}/candidate-profiles/me`, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`
-    }
-  });
+  const res = await authFetch("/candidate-profiles/me");
 
   return res.json();
 }
 
 export async function saveMyProfile(data) {
-  const res = await fetch(`${API_URL}/candidate-profiles/me`, {
+  const res = await authFetch("/candidate-profiles/me", {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${getToken()}`
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(data)
   });

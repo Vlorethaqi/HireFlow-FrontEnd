@@ -43,6 +43,11 @@ export default function CreateJob() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
+    if (form.skills.length === 0) {
+      setMessage("Please select at least one required skill.");
+      return;
+    }
+
     const res = await createJob({
       ...form,
       salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
@@ -120,7 +125,8 @@ export default function CreateJob() {
             <option key={department.id} value={department.id}>{department.name}</option>
           ))}
         </select>
-        <select className="management-select management-field-wide" multiple value={form.skills} onChange={(e) => updateField("skills", [...e.target.selectedOptions].map((option) => option.value))}>
+        <select className="management-select management-field-wide" multiple value={form.skills} onChange={(e) => updateField("skills", [...e.target.selectedOptions].map((option) => option.value))} required>
+          <option disabled value="">Required skills</option>
           {skills.map((skill) => (
             <option key={skill.id} value={skill.id}>{skill.name}</option>
           ))}

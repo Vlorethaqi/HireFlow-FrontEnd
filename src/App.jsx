@@ -17,7 +17,10 @@ import Users from "./pages/Users.jsx";
 import "./index.css";
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   const loadUser = () => {
     const savedUser = localStorage.getItem("user");
@@ -25,7 +28,6 @@ function App() {
   };
 
   useEffect(() => {
-    loadUser();
     window.addEventListener("authChange", loadUser);
 
     return () => {
@@ -34,14 +36,18 @@ function App() {
   }, []);
 
   const isAdmin = user?.role === "ADMIN";
-  const canManageCompany = ["ADMIN", "HR"].includes(user?.role);
+  const isHr = user?.role === "HR";
+  const canReviewApplications = isAdmin || isHr;
+  const canCreateCompany = Boolean(user && !isHr && !user.companyId);
 
   const authRoute = (page) => (user ? page : <Navigate to="/login" />);
   const adminRoute = (page) => (isAdmin ? page : <Navigate to="/login" />);
-  const companyRoute = (page) => (canManageCompany ? page : <Navigate to="/login" />);
+  const reviewRoute = (page) => (canReviewApplications ? page : <Navigate to="/login" />);
+  const createCompanyRoute = (page) => (canCreateCompany ? page : <Navigate to="/jobs" />);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     setUser(null);
   };
@@ -68,12 +74,17 @@ function App() {
             </>
           )}
 
-          {user && <NavLink to="/companies/create">Create Company</NavLink>}
+          {canCreateCompany && <NavLink to="/companies/create">Create Company</NavLink>}
 
-          {canManageCompany && (
+          {isAdmin && (
             <>
               <NavLink to="/departments">Departments</NavLink>
               <NavLink to="/jobs/create">Create Job</NavLink>
+            </>
+          )}
+
+          {canReviewApplications && (
+            <>
               <NavLink to="/hr-review">HR Review</NavLink>
             </>
           )}
@@ -103,18 +114,18 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/jobs" />} />
         <Route path="/jobs" element={<Jobs />} />
-        <Route path="/skills" element={companyRoute(<Skills />)} />
+        <Route path="/skills" element={adminRoute(<Skills />)} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
         <Route path="/profile" element={authRoute(<CandidateProfile />)} />
         <Route path="/applications" element={authRoute(<MyApplications />)} />
         <Route path="/saved-jobs" element={authRoute(<SavedJobs />)} />
-        <Route path="/companies/create" element={authRoute(<CreateCompany />)} />
+        <Route path="/companies/create" element={createCompanyRoute(<CreateCompany />)} />
 
-        <Route path="/departments" element={companyRoute(<Departments />)} />
-        <Route path="/jobs/create" element={companyRoute(<CreateJob />)} />
-        <Route path="/hr-review" element={companyRoute(<HRReview />)} />
+        <Route path="/departments" element={adminRoute(<Departments />)} />
+        <Route path="/jobs/create" element={adminRoute(<CreateJob />)} />
+        <Route path="/hr-review" element={reviewRoute(<HRReview />)} />
 
         <Route path="/users" element={adminRoute(<Users />)} />
         <Route path="/companies" element={adminRoute(<Companies />)} />
