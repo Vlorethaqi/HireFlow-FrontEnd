@@ -20,7 +20,8 @@ function DepartmentsProvider({ children }) {
     api.get("/departments")
       .then((res) => {
         if (isActive) {
-          setDepartments(res.data);
+          const payload = res.data;
+          setDepartments(Array.isArray(payload) ? payload : payload.data || []);
           setError("");
         }
       })
