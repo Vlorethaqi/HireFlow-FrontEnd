@@ -107,7 +107,7 @@ function JobsContent() {
   const { jobs, pagination, loading, error, filters, updateFilter, clearFilters } = useJobs();
   const navigate = useNavigate();
   const [applyMessage, setApplyMessage] = useState("");
-  const user = JSON.parse(localStorage.getItem("user") || "null");
+  const user = JSON.parse(sessionStorage.getItem("user") || "null");
   const isCandidate = user?.role === "CANDIDATE";
 
   const chooseCoverLetterFile = () => {
@@ -145,7 +145,7 @@ function JobsContent() {
   };
 
   const handleApply = async (job) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       navigate("/login", { state: { from: "/jobs", applyJobId: job.id } });
@@ -178,7 +178,7 @@ function JobsContent() {
   };
 
   const handleSave = async (job) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
 
     if (!token) {
       navigate("/login", { state: { from: "/jobs" } });

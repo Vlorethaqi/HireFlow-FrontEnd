@@ -7,7 +7,7 @@ const api = axios.create({
 let refreshRequest = null;
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("token");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -25,7 +25,7 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const refreshToken = localStorage.getItem("refreshToken");
+    const refreshToken = sessionStorage.getItem("refreshToken");
 
     if (!refreshToken) {
       return Promise.reject(error);
@@ -46,11 +46,11 @@ api.interceptors.response.use(
       }
 
       const nextToken = data.accessToken || data.token;
-      localStorage.setItem("token", nextToken);
-      localStorage.setItem("refreshToken", data.refreshToken);
+      sessionStorage.setItem("token", nextToken);
+      sessionStorage.setItem("refreshToken", data.refreshToken);
 
       if (data.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        sessionStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("authChange"));
       }
 
@@ -58,9 +58,9 @@ api.interceptors.response.use(
       return api(originalRequest);
     } catch (refreshError) {
       refreshRequest = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("user");
       window.dispatchEvent(new Event("authChange"));
       return Promise.reject(refreshError);
     }

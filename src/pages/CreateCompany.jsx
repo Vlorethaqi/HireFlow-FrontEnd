@@ -6,7 +6,7 @@ import "./management-pages.css";
 export default function CreateCompany() {
   const navigate = useNavigate();
   const [loggedUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = sessionStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
   const [message, setMessage] = useState("");
@@ -37,9 +37,9 @@ export default function CreateCompany() {
       return;
     }
 
-    localStorage.setItem("token", res.accessToken || res.token);
-    localStorage.setItem("refreshToken", res.refreshToken);
-    localStorage.setItem("user", JSON.stringify(res.user || res.admin));
+    sessionStorage.setItem("token", res.accessToken || res.token);
+    sessionStorage.setItem("refreshToken", res.refreshToken);
+    sessionStorage.setItem("user", JSON.stringify(res.user || res.admin));
     window.dispatchEvent(new Event("authChange"));
     navigate("/companies");
   };

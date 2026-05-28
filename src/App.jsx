@@ -18,12 +18,12 @@ import "./index.css";
 
 function App() {
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = sessionStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const loadUser = () => {
-    const savedUser = localStorage.getItem("user");
+    const savedUser = sessionStorage.getItem("user");
     setUser(savedUser ? JSON.parse(savedUser) : null);
   };
 
@@ -46,9 +46,9 @@ function App() {
   const createCompanyRoute = (page) => (canCreateCompany ? page : <Navigate to="/jobs" />);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("refreshToken");
+    sessionStorage.removeItem("user");
     setUser(null);
   };
 
