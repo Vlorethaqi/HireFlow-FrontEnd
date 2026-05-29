@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import "./management-pages.css";
 
@@ -42,7 +43,17 @@ function DepartmentsProvider({ children }) {
   }, []);
 
   const filteredDepartments = useMemo(() => {
-    return departments.filter((department) =>
+    const uniqueDepartments = departments.reduce((result, department) => {
+      const key = department.name?.trim().toLowerCase();
+
+      if (key && !result.some((item) => item.name?.trim().toLowerCase() === key)) {
+        result.push(department);
+      }
+
+      return result;
+    }, []);
+
+    return uniqueDepartments.filter((department) =>
       department.name?.toLowerCase().includes(search.toLowerCase())
     );
   }, [departments, search]);
@@ -66,13 +77,27 @@ function Departments() {
 
 function DepartmentsContent() {
   const { departments, search, setSearch, loading, error } = useDepartments();
+  const navigate = useNavigate();
+  const user = JSON.parse(sessionStorage.getItem("user") || "null");
+  const isCandidate = user?.role === "CANDIDATE";
+
+  const showDepartmentJobs = (department) => {
+    const query = new URLSearchParams({
+      departmentName: department.name,
+      status: "OPEN",
+    });
+
+    navigate(`/jobs?${query.toString()}`);
+  };
 
   return (
     <main className="management-page">
       <section className="management-header">
         <div>
           <h1 className="management-title">Departments</h1>
-          <p className="management-subtitle">Browse company departments connected to job postings.</p>
+          <p className="management-subtitle">
+            {isCandidate ? "Choose a department to browse open jobs." : "Browse company departments connected to job postings."}
+          </p>
         </div>
         <input
           className="management-input"
@@ -86,11 +111,22 @@ function DepartmentsContent() {
       {loading && <p className="management-muted">Loading departments...</p>}
 
       {!loading && (
-        <section className="management-grid">
+        <section className={isCandidate ? "management-button-grid" : "management-grid"}>
           {departments.map((department) => (
-            <article key={department.id} className="management-card">
-              <h2 className="management-card-title">{department.name}</h2>
-            </article>
+            isCandidate ? (
+              <button
+                className="management-department-button"
+                key={department.id}
+                type="button"
+                onClick={() => showDepartmentJobs(department)}
+              >
+                {department.name}
+              </button>
+            ) : (
+              <article key={department.id} className="management-card">
+                <h2 className="management-card-title">{department.name}</h2>
+              </article>
+            )
           ))}
 
           {departments.length === 0 && <p className="management-muted">No departments found.</p>}

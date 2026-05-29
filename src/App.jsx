@@ -69,6 +69,7 @@ function App() {
           {user?.role === "CANDIDATE" && (
             <>
               <NavLink to="/profile">Profile</NavLink>
+              <NavLink to="/departments">Departments</NavLink>
               <NavLink to="/applications">Application Status</NavLink>
               <NavLink to="/saved-jobs">Saved Jobs</NavLink>
             </>
@@ -124,7 +125,7 @@ function App() {
         <Route path="/saved-jobs" element={authRoute(<SavedJobs />)} />
         <Route path="/companies/create" element={createCompanyRoute(<CreateCompany />)} />
 
-        <Route path="/departments" element={adminRoute(<Departments />)} />
+        <Route path="/departments" element={authRoute(<Departments />)} />
         <Route path="/jobs/create" element={adminRoute(<CreateJob />)} />
         <Route path="/hr-review" element={reviewRoute(<HRReview />)} />
 

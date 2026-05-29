@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { applyToJob } from "../services/applicationService";
 import { getJobs } from "../services/jobService";
 import { saveJob } from "../services/savedJobService";
@@ -12,17 +12,19 @@ function useJobs() {
 }
 
 function JobsProvider({ children }) {
+  const [searchParams] = useSearchParams();
   const [jobs, setJobs] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
-    search: "",
-    status: "",
-    employmentType: "",
-    location: "",
-    departmentName: "",
-    skill: "",
+    search: searchParams.get("search") || "",
+    status: searchParams.get("status") || "",
+    employmentType: searchParams.get("employmentType") || "",
+    location: searchParams.get("location") || "",
+    departmentName: searchParams.get("departmentName") || "",
+    departmentId: searchParams.get("departmentId") || "",
+    skill: searchParams.get("skill") || "",
   });
 
   const queryParams = useMemo(() => {
@@ -82,6 +84,7 @@ function JobsProvider({ children }) {
       employmentType: "",
       location: "",
       departmentName: "",
+      departmentId: "",
       skill: "",
     });
   };
