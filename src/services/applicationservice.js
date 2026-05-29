@@ -1,74 +1,53 @@
-import { authFetch } from "./authFetch";
+import api from "./api";
 
-function headers() {
-  return {
-    "Content-Type": "application/json"
-  };
-}
+const headers = () => ({
+  "Content-Type": "application/json",
+});
 
+// APPLY TO JOB
 export async function applyToJob(data) {
-  const res = await authFetch("/applications/apply", {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.post("/applications/apply", data);
+  return res.data;
 }
 
+// GET MY APPLICATIONS
 export async function getMyApplications() {
-  const res = await authFetch("/applications/me");
-
-  return res.json();
+  const res = await api.get("/applications/me");
+  return res.data;
 }
 
+// COMPANY APPLICATIONS
 export async function getCompanyApplications() {
-  const res = await authFetch("/applications/company");
-
-  return res.json();
+  const res = await api.get("/applications/company");
+  return res.data;
 }
 
+// UPDATE STATUS
 export async function updateApplicationStatus(id, statusId) {
-  const res = await authFetch(`/applications/${id}/status`, {
-    method: "PUT",
-    headers: headers(),
-    body: JSON.stringify({ statusId })
-  });
-
-  return res.json();
+  const res = await api.put(`/applications/${id}/status`, { statusId });
+  return res.data;
 }
 
+// STATUSES
 export async function getApplicationStatuses() {
-  const res = await authFetch("/application-statuses");
-
-  return res.json();
+  const res = await api.get("/application-statuses");
+  return res.data;
 }
 
+// REVIEW
 export async function createApplicationReview(data) {
-  const res = await authFetch("/application-reviews", {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.post("/application-reviews", data);
+  return res.data;
 }
 
+// RESPONSE
 export async function createApplicationResponse(data) {
-  const res = await authFetch("/application-responses", {
-    method: "POST",
-    headers: headers(),
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.post("/application-responses", data);
+  return res.data;
 }
 
+// AI ANALYSIS
 export async function analyzeApplication(applicationId) {
-  const res = await authFetch(`/ai/analyze-application/${applicationId}`, {
-    method: "POST",
-    headers: headers()
-  });
-
-  return res.json();
+  const res = await api.post(`/ai/analyze-application/${applicationId}`);
+  return res.data;
 }

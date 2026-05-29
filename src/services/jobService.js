@@ -1,22 +1,15 @@
-import { authFetch } from "./authFetch";
+import api from "./api";
 
 export async function createJob(data) {
-  const res = await authFetch("/jobs", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.post("/jobs", data);
+  return res.data;
 }
 
 export async function getJobs(params = {}) {
   const query = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value !== "")
-  );
-  const res = await authFetch(`/jobs${query.toString() ? `?${query}` : ""}`);
+  ).toString();
 
-  return res.json();
+  const res = await api.get(`/jobs${query ? `?${query}` : ""}`);
+  return res.data;
 }

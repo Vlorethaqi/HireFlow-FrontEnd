@@ -1,19 +1,11 @@
-import { authFetch } from "./authFetch";
+import api from "./api";
 
 export async function getMyProfile() {
-  const res = await authFetch("/candidate-profiles/me");
-
-  return res.json();
+  const res = await api.get("/candidate-profiles/me");
+  return res.data;
 }
 
 export async function saveMyProfile(data) {
-  const res = await authFetch("/candidate-profiles/me", {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.put("/candidate-profiles/me", data);
+  return res.data;
 }

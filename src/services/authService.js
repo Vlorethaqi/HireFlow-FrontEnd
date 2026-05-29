@@ -1,39 +1,25 @@
-const API_URL = "http://localhost:3000";
+import api from "./api";
 
 // REGISTER
 export async function register(data) {
-  const res = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
-
-  return res.json();
+  const res = await api.post("/auth/register", data);
+  return res.data;
 }
 
 // LOGIN
 export async function login(data) {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data)
-  });
+  const res = await api.post("/auth/login", data);
 
-  return res.json();
+  // IMPORTANT: ruaje në sessionStorage (jo localStorage)
+  sessionStorage.setItem("token", res.data.accessToken || res.data.token);
+  sessionStorage.setItem("refreshToken", res.data.refreshToken);
+  sessionStorage.setItem("user", JSON.stringify(res.data.user));
+
+  return res.data;
 }
 
+// REFRESH (opsional, axios interceptor e bën këtë automatikisht)
 export async function refreshToken(refreshToken) {
-  const res = await fetch(`${API_URL}/auth/refresh`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ refreshToken })
-  });
-
-  return res.json();
+  const res = await api.post("/auth/refresh", { refreshToken });
+  return res.data;
 }

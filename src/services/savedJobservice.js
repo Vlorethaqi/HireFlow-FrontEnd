@@ -1,27 +1,19 @@
-import { authFetch } from "./authFetch";
+import api from "./api";
 
+// SAVE JOB
 export async function saveJob(jobId) {
-  const res = await authFetch("/saved-jobs", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ jobId }),
-  });
-
-  return res.json();
+  const res = await api.post("/saved-jobs", { jobId });
+  return res.data;
 }
 
+// GET SAVED JOBS
 export async function getSavedJobs() {
-  const res = await authFetch("/saved-jobs");
-
-  return res.json();
+  const res = await api.get("/saved-jobs");
+  return res.data;
 }
 
+// UNSAVE JOB
 export async function unsaveJob(savedJobId) {
-  const res = await authFetch(`/saved-jobs/${savedJobId}`, {
-    method: "DELETE",
-  });
-
-  return res.json();
+  const res = await api.delete(`/saved-jobs/${savedJobId}`);
+  return res.data;
 }
