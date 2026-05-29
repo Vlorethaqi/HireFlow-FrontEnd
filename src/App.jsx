@@ -79,6 +79,7 @@ function App() {
           {isAdmin && (
             <>
               <NavLink to="/departments">Departments</NavLink>
+              <NavLink to="/skills">Skills</NavLink>
               <NavLink to="/jobs/create">Create Job</NavLink>
             </>
           )}

@@ -8,6 +8,7 @@ export default function CreateJob() {
   const [departments, setDepartments] = useState([]);
   const [message, setMessage] = useState("");
   const [newSkill, setNewSkill] = useState("");
+  const [selectedSkillId, setSelectedSkillId] = useState("");
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -40,6 +41,27 @@ export default function CreateJob() {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const selectedSkills = skills.filter((skill) => form.skills.includes(String(skill.id)));
+
+  const removeSkillFromJob = (skillId) => {
+    setForm((current) => ({
+      ...current,
+      skills: current.skills.filter((selectedSkillId) => selectedSkillId !== String(skillId))
+    }));
+  };
+
+  const addExistingSkillToJob = () => {
+    if (!selectedSkillId) {
+      return;
+    }
+
+    setForm((current) => ({
+      ...current,
+      skills: [...new Set([...current.skills, selectedSkillId])]
+    }));
+    setSelectedSkillId("");
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -48,33 +70,37 @@ export default function CreateJob() {
       return;
     }
 
-    const res = await createJob({
-      ...form,
-      salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
-      salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
-      departmentId: form.departmentId ? Number(form.departmentId) : null,
-      skills: form.skills.map((skillId) => ({ skillId: Number(skillId), importanceLevel: "REQUIRED" })),
-      requirements: form.requirements.split("\n").map((item) => item.trim()).filter(Boolean)
-    });
+    try {
+      const res = await createJob({
+        ...form,
+        salaryMin: form.salaryMin ? Number(form.salaryMin) : null,
+        salaryMax: form.salaryMax ? Number(form.salaryMax) : null,
+        departmentId: form.departmentId ? Number(form.departmentId) : null,
+        skills: form.skills.map((skillId) => ({ skillId: Number(skillId), importanceLevel: "REQUIRED" })),
+        requirements: form.requirements.split("\n").map((item) => item.trim()).filter(Boolean)
+      });
 
-    if (res.success === false) {
-      setMessage(res.message);
-      return;
+      if (res.success === false) {
+        setMessage(res.message);
+        return;
+      }
+
+      setMessage("Job created successfully.");
+      setForm({
+        title: "",
+        description: "",
+        location: "",
+        employmentType: "FULL_TIME",
+        salaryMin: "",
+        salaryMax: "",
+        deadline: "",
+        departmentId: "",
+        skills: [],
+        requirements: ""
+      });
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Job could not be created.");
     }
-
-    setMessage("Job created successfully.");
-    setForm({
-      title: "",
-      description: "",
-      location: "",
-      employmentType: "FULL_TIME",
-      salaryMin: "",
-      salaryMax: "",
-      deadline: "",
-      departmentId: "",
-      skills: [],
-      requirements: ""
-    });
   };
 
   const handleCreateSkill = async () => {
@@ -82,18 +108,23 @@ export default function CreateJob() {
       return;
     }
 
-    const res = await api.post("/skills", {
-      name: newSkill.trim(),
-      category: "TECHNICAL"
-    });
-    const createdSkill = res.data.data || res.data;
+    try {
+      const res = await api.post("/skills", {
+        name: newSkill.trim(),
+        category: "TECHNICAL"
+      });
+      const createdSkill = res.data.data || res.data;
 
-    setNewSkill("");
-    await loadSkills();
-    setForm((current) => ({
-      ...current,
-      skills: [...new Set([...current.skills, String(createdSkill.id)])]
-    }));
+      setNewSkill("");
+      await loadSkills();
+      setForm((current) => ({
+        ...current,
+        skills: [...new Set([...current.skills, String(createdSkill.id)])]
+      }));
+      setMessage("Skill added to this job.");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Skill could not be added.");
+    }
   };
 
   return (
@@ -125,12 +156,42 @@ export default function CreateJob() {
             <option key={department.id} value={department.id}>{department.name}</option>
           ))}
         </select>
-        <select className="management-select management-field-wide" multiple value={form.skills} onChange={(e) => updateField("skills", [...e.target.selectedOptions].map((option) => option.value))} required>
-          <option disabled value="">Required skills</option>
-          {skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>{skill.name}</option>
+        <div className="management-chip-list management-field-wide">
+          {selectedSkills.map((skill) => (
+            <span className="management-skill-chip" key={skill.id}>
+              {skill.name}
+              <button
+                aria-label={`Remove ${skill.name} from job`}
+                className="management-chip-remove"
+                type="button"
+                onClick={() => removeSkillFromJob(skill.id)}
+              >
+                x
+              </button>
+            </span>
           ))}
-        </select>
+
+          {selectedSkills.length === 0 && (
+            <span className="management-muted">No skills selected for this job.</span>
+          )}
+        </div>
+        <div className="management-inline management-field-wide">
+          <select
+            className="management-select"
+            value={selectedSkillId}
+            onChange={(e) => setSelectedSkillId(e.target.value)}
+          >
+            <option value="">Add existing skill</option>
+            {skills
+              .filter((skill) => !form.skills.includes(String(skill.id)))
+              .map((skill) => (
+                <option key={skill.id} value={skill.id}>{skill.name}</option>
+              ))}
+          </select>
+          <button className="management-button" type="button" onClick={addExistingSkillToJob}>
+            Add Selected
+          </button>
+        </div>
         <div className="management-inline management-field-wide">
           <input
             className="management-input"

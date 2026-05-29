@@ -12,6 +12,7 @@ function SkillsProvider({ children }) {
   const [skills, setSkills] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -61,7 +62,19 @@ function SkillsProvider({ children }) {
 
   return (
     <SkillsContext.Provider
-      value={{ skills: filteredSkills, search, setSearch, category, setCategory, loading, error, loadSkills, setError }}
+      value={{
+        skills: filteredSkills,
+        search,
+        setSearch,
+        category,
+        setCategory,
+        loading,
+        error,
+        success,
+        setSuccess,
+        loadSkills,
+        setError,
+      }}
     >
       {children}
     </SkillsContext.Provider>
@@ -77,9 +90,54 @@ function Skills() {
 }
 
 function SkillsContent() {
-  const { skills, search, setSearch, category, setCategory, loading, error, loadSkills, setError } = useSkills();
+  const {
+    skills,
+    search,
+    setSearch,
+    category,
+    setCategory,
+    loading,
+    error,
+    success,
+    setSuccess,
+    loadSkills,
+    setError,
+  } = useSkills();
+  const [form, setForm] = useState({ name: "", category: "TECHNICAL", description: "" });
+
+  const updateField = (name, value) => {
+    setForm((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleCreate = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSuccess("");
+
+    try {
+      const res = await api.post("/skills", {
+        name: form.name,
+        category: form.category,
+        description: form.description,
+      });
+
+      if (res.data?.success === false) {
+        setError(res.data.message || "Skill could not be created.");
+        return;
+      }
+
+      setForm({ name: "", category: "TECHNICAL", description: "" });
+      setSuccess("Skill created successfully.");
+      loadSkills();
+    } catch (err) {
+      setError(err.response?.data?.message || "Skill could not be created.");
+    }
+  };
 
   const handleDelete = async (skill) => {
+    setError("");
+    setSuccess("");
+
     try {
       const res = await api.delete(`/skills/${skill.id}`);
 
@@ -88,6 +146,7 @@ function SkillsContent() {
         return;
       }
 
+      setSuccess("Skill deleted successfully.");
       loadSkills();
     } catch (err) {
       setError(err.response?.data?.message || "Skill could not be deleted.");
@@ -124,6 +183,37 @@ function SkillsContent() {
       </section>
 
       {error && <p className="management-error">{error}</p>}
+      {success && <p className="management-success">{success}</p>}
+
+      <form className="management-form" onSubmit={handleCreate}>
+        <input
+          className="management-input"
+          placeholder="Skill name"
+          value={form.name}
+          onChange={(e) => updateField("name", e.target.value)}
+          required
+        />
+        <select
+          className="management-select"
+          value={form.category}
+          onChange={(e) => updateField("category", e.target.value)}
+        >
+          <option value="TECHNICAL">Technical</option>
+          <option value="SOFT">Soft</option>
+          <option value="LANGUAGE">Language</option>
+          <option value="TOOL">Tool</option>
+        </select>
+        <textarea
+          className="management-input management-field-wide"
+          placeholder="Description"
+          value={form.description}
+          onChange={(e) => updateField("description", e.target.value)}
+        />
+        <button className="management-button management-button-primary" type="submit">
+          Add Skill
+        </button>
+      </form>
+
       {loading && <p className="management-muted">Loading skills...</p>}
 
       {!loading && (

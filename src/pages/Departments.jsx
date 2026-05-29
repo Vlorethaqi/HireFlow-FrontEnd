@@ -90,7 +90,6 @@ function DepartmentsContent() {
           {departments.map((department) => (
             <article key={department.id} className="management-card">
               <h2 className="management-card-title">{department.name}</h2>
-              <p className="management-muted">Company ID: {department.companyId}</p>
             </article>
           ))}
 

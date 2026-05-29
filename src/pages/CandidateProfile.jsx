@@ -53,16 +53,71 @@ export default function CandidateProfile() {
     setForm((current) => ({ ...current, [name]: value }));
   };
 
+  const selectedSkills = skills.filter((skill) => form.skills.includes(String(skill.id)));
+
+  const removeSkillFromProfile = async (skillId) => {
+    const nextForm = {
+      ...form,
+      skills: form.skills.filter((selectedSkillId) => selectedSkillId !== String(skillId))
+    };
+
+    setForm(nextForm);
+
+    try {
+      const res = await saveMyProfile(buildProfilePayload(nextForm));
+
+      if (res.success === false) {
+        setMessage(res.message || "Skill could not be removed.");
+        return;
+      }
+
+      applySavedProfile(res.data);
+      setMessage("Skill removed from your profile.");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Skill could not be removed.");
+    }
+  };
+
+  const buildProfilePayload = (profileForm) => ({
+    ...profileForm,
+    experienceYears: Number(profileForm.experienceYears || 0),
+    skills: profileForm.skills.map(Number)
+  });
+
+  const applySavedProfile = (profile) => {
+    if (!profile) {
+      return;
+    }
+
+    setForm({
+      phone: profile.phone || "",
+      location: profile.location || "",
+      education: profile.education || "",
+      experienceYears: profile.experienceYears || 0,
+      cvUrl: profile.cvUrl || "",
+      githubUrl: profile.githubUrl || "",
+      linkedinUrl: profile.linkedinUrl || "",
+      bio: profile.bio || "",
+      skills: (profile.CandidateSkills || []).map((item) => String(item.skillId))
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const res = await saveMyProfile({
-      ...form,
-      experienceYears: Number(form.experienceYears || 0),
-      skills: form.skills.map(Number)
-    });
+    try {
+      const res = await saveMyProfile(buildProfilePayload(form));
 
-    setMessage(res.success === false ? res.message : "Profile saved successfully.");
+      if (res.success === false) {
+        setMessage(res.message);
+        return;
+      }
+
+      applySavedProfile(res.data);
+      setMessage("Profile saved successfully.");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Profile could not be saved.");
+    }
   };
 
   const handleCreateSkill = async () => {
@@ -70,18 +125,33 @@ export default function CandidateProfile() {
       return;
     }
 
-    const res = await api.post("/skills", {
-      name: newSkill.trim(),
-      category: "TECHNICAL"
-    });
-    const createdSkill = res.data.data || res.data;
+    try {
+      const res = await api.post("/skills", {
+        name: newSkill.trim(),
+        category: "TECHNICAL"
+      });
+      const createdSkill = res.data.data || res.data;
+      const nextForm = {
+        ...form,
+        skills: [...new Set([...form.skills, String(createdSkill.id)])]
+      };
 
-    setNewSkill("");
-    await loadSkills();
-    setForm((current) => ({
-      ...current,
-      skills: [...new Set([...current.skills, String(createdSkill.id)])]
-    }));
+      setNewSkill("");
+      await loadSkills();
+
+      const profileRes = await saveMyProfile(buildProfilePayload(nextForm));
+
+      if (profileRes.success === false) {
+        setForm(nextForm);
+        setMessage(profileRes.message || "Skill was selected, but profile could not be saved.");
+        return;
+      }
+
+      applySavedProfile(profileRes.data);
+      setMessage("Skill added to your profile.");
+    } catch (err) {
+      setMessage(err.response?.data?.message || "Skill could not be added.");
+    }
   };
 
   return (
@@ -103,16 +173,25 @@ export default function CandidateProfile() {
         <input className="management-input" placeholder="CV URL" value={form.cvUrl} onChange={(e) => updateField("cvUrl", e.target.value)} />
         <input className="management-input" placeholder="GitHub URL" value={form.githubUrl} onChange={(e) => updateField("githubUrl", e.target.value)} />
         <input className="management-input" placeholder="LinkedIn URL" value={form.linkedinUrl} onChange={(e) => updateField("linkedinUrl", e.target.value)} />
-        <select
-          className="management-select management-field-wide"
-          multiple
-          value={form.skills}
-          onChange={(e) => updateField("skills", [...e.target.selectedOptions].map((option) => option.value))}
-        >
-          {skills.map((skill) => (
-            <option key={skill.id} value={skill.id}>{skill.name}</option>
+        <div className="management-chip-list management-field-wide">
+          {selectedSkills.map((skill) => (
+            <span className="management-skill-chip" key={skill.id}>
+              {skill.name}
+              <button
+                aria-label={`Remove ${skill.name} from profile`}
+                className="management-chip-remove"
+                type="button"
+                onClick={() => removeSkillFromProfile(skill.id)}
+              >
+                x
+              </button>
+            </span>
           ))}
-        </select>
+
+          {selectedSkills.length === 0 && (
+            <span className="management-muted">No skills added yet.</span>
+          )}
+        </div>
         <div className="management-inline management-field-wide">
           <input
             className="management-input"
