@@ -1,17 +1,11 @@
-const API_URL = "http://localhost:3000";
+import api from "./api";
 
 export async function getNotifications() {
-  const accessToken = localStorage.getItem("accessToken");
+  const res = await api.get("/notifications");
+  return res.data;
+}
 
-  const response = await fetch(`${API_URL}/notifications`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch notifications");
-  }
-
-  return response.json();
+export async function markNotificationRead(id) {
+  const res = await api.put(`/notifications/${id}/read`);
+  return res.data;
 }

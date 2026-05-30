@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 
 import CandidateProfile from "./pages/CandidateProfile.jsx";
@@ -16,17 +16,34 @@ import Skills from "./pages/Skills.jsx";
 import Users from "./pages/Users.jsx";
 import "./index.css";
 import Notification from "./pages/Notification";
+import { getNotifications } from "./services/notificationService";
 
 function App() {
   const [user, setUser] = useState(() => {
     const savedUser = sessionStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
   });
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   const loadUser = () => {
     const savedUser = sessionStorage.getItem("user");
     setUser(savedUser ? JSON.parse(savedUser) : null);
   };
+
+  const loadNotificationCount = useCallback(async () => {
+    if (!sessionStorage.getItem("token")) {
+      setUnreadNotificationCount(0);
+      return;
+    }
+
+    try {
+      const result = await getNotifications();
+      const unreadCount = (result.data || []).filter((notification) => !notification.isRead).length;
+      setUnreadNotificationCount(unreadCount);
+    } catch {
+      setUnreadNotificationCount(0);
+    }
+  }, []);
 
   useEffect(() => {
     window.addEventListener("authChange", loadUser);
@@ -35,6 +52,24 @@ function App() {
       window.removeEventListener("authChange", loadUser);
     };
   }, []);
+
+  useEffect(() => {
+    loadNotificationCount();
+
+    const refreshNotifications = () => loadNotificationCount();
+    const intervalId = window.setInterval(loadNotificationCount, 30000);
+
+    window.addEventListener("authChange", refreshNotifications);
+    window.addEventListener("notificationChange", refreshNotifications);
+    window.addEventListener("focus", refreshNotifications);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("authChange", refreshNotifications);
+      window.removeEventListener("notificationChange", refreshNotifications);
+      window.removeEventListener("focus", refreshNotifications);
+    };
+  }, [loadNotificationCount, user?.id]);
 
   const isAdmin = user?.role === "ADMIN";
   const isHr = user?.role === "HR";
@@ -67,7 +102,32 @@ function App() {
         <nav className="app-nav">
           <NavLink to="/jobs">Jobs</NavLink>
 
-          {user && <NavLink to="/notifications">Notifications</NavLink>}
+          {user && (
+            <NavLink
+              to="/notifications"
+              className={({ isActive }) =>
+                [
+                  "notification-nav-link",
+                  isActive ? "active" : "",
+                  unreadNotificationCount > 0 ? "notification-nav-link-unread" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")
+              }
+              title={
+                unreadNotificationCount > 0
+                  ? `${unreadNotificationCount} unread notification${unreadNotificationCount === 1 ? "" : "s"}`
+                  : "Notifications"
+              }
+            >
+              <span>Notifications</span>
+              {unreadNotificationCount > 0 && (
+                <span className="notification-nav-badge">
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
+              )}
+            </NavLink>
+          )}
 
           {user?.role === "CANDIDATE" && (
             <>

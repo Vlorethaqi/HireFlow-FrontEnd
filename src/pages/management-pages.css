@@ -252,6 +252,23 @@ textarea.management-input {
   transform: translateY(-2px);
 }
 
+.notification-card {
+  border-left: 4px solid transparent;
+}
+
+.notification-card-unread {
+  border-color: #fed7aa;
+  border-left-color: #ea580c;
+  background: #fff7ed;
+}
+
+.notification-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .management-row-card {
   display: flex;
   align-items: center;
