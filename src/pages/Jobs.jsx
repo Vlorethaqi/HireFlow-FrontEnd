@@ -13,19 +13,32 @@ function useJobs() {
 
 function JobsProvider({ children }) {
   const [searchParams] = useSearchParams();
+  const searchParamString = searchParams.toString();
+  const urlFilters = useMemo(() => {
+    const params = new URLSearchParams(searchParamString);
+
+    return {
+      search: params.get("search") || "",
+      status: params.get("status") || "",
+      employmentType: params.get("employmentType") || "",
+      location: params.get("location") || "",
+      departmentName: params.get("departmentName") || "",
+      departmentId: params.get("departmentId") || "",
+      skill: params.get("skill") || "",
+    };
+  }, [searchParamString]);
   const [jobs, setJobs] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
-    search: searchParams.get("search") || "",
-    status: searchParams.get("status") || "",
-    employmentType: searchParams.get("employmentType") || "",
-    location: searchParams.get("location") || "",
-    departmentName: searchParams.get("departmentName") || "",
-    departmentId: searchParams.get("departmentId") || "",
-    skill: searchParams.get("skill") || "",
+    ...urlFilters,
   });
+
+  useEffect(() => {
+    setLoading(true);
+    setFilters(urlFilters);
+  }, [urlFilters]);
 
   const queryParams = useMemo(() => {
     return Object.fromEntries(
