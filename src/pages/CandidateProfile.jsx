@@ -13,6 +13,7 @@ export default function CandidateProfile() {
     education: "",
     experienceYears: 0,
     cvUrl: "",
+    cvFile: null,
     githubUrl: "",
     linkedinUrl: "",
     bio: "",
@@ -41,6 +42,7 @@ export default function CandidateProfile() {
         education: profile.education || "",
         experienceYears: profile.experienceYears || 0,
         cvUrl: profile.cvUrl || "",
+        cvFile: null,
         githubUrl: profile.githubUrl || "",
         linkedinUrl: profile.linkedinUrl || "",
         bio: profile.bio || "",
@@ -94,8 +96,9 @@ export default function CandidateProfile() {
       location: profile.location || "",
       education: profile.education || "",
       experienceYears: profile.experienceYears || 0,
-      cvUrl: profile.cvUrl || "",
-      githubUrl: profile.githubUrl || "",
+    cvUrl: profile.cvUrl || "",
+    cvFile: null,
+    githubUrl: profile.githubUrl || "",
       linkedinUrl: profile.linkedinUrl || "",
       bio: profile.bio || "",
       skills: (profile.CandidateSkills || []).map((item) => String(item.skillId))
@@ -118,6 +121,28 @@ export default function CandidateProfile() {
     } catch (err) {
       setMessage(err.response?.data?.message || "Profile could not be saved.");
     }
+  };
+
+  const handleCvFileChange = (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      updateField("cvFile", null);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+
+      updateField("cvFile", {
+        fileName: file.name,
+        mimeType: file.type || "application/octet-stream",
+        contentBase64: result.includes(",") ? result.split(",")[1] : result,
+      });
+    };
+    reader.onerror = () => setMessage("CV file could not be loaded.");
+    reader.readAsDataURL(file);
   };
 
   const handleCreateSkill = async () => {
@@ -170,7 +195,10 @@ export default function CandidateProfile() {
         <input className="management-input" placeholder="Location" value={form.location} onChange={(e) => updateField("location", e.target.value)} />
         <input className="management-input" placeholder="Education" value={form.education} onChange={(e) => updateField("education", e.target.value)} />
         <input className="management-input" type="number" min="0" placeholder="Experience years" value={form.experienceYears} onChange={(e) => updateField("experienceYears", e.target.value)} />
-        <input className="management-input" placeholder="CV URL" value={form.cvUrl} onChange={(e) => updateField("cvUrl", e.target.value)} />
+        <label className="management-file-field">
+          <span>{form.cvFile?.fileName || (form.cvUrl ? "CV uploaded" : "Upload CV")}</span>
+          <input type="file" accept=".pdf,.doc,.docx" onChange={handleCvFileChange} />
+        </label>
         <input className="management-input" placeholder="GitHub URL" value={form.githubUrl} onChange={(e) => updateField("githubUrl", e.target.value)} />
         <input className="management-input" placeholder="LinkedIn URL" value={form.linkedinUrl} onChange={(e) => updateField("linkedinUrl", e.target.value)} />
         <div className="management-chip-list management-field-wide">

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { applyToJob } from "../services/applicationService";
+import { getMyProfile } from "../services/candidateProfileservice";
 import { getJobs } from "../services/jobService";
 import { saveJob } from "../services/savedJobService";
 import "./management-pages.css";
@@ -126,38 +127,8 @@ function JobsContent() {
   const user = JSON.parse(sessionStorage.getItem("user") || "null");
   const isCandidate = user?.role === "CANDIDATE";
 
-  const chooseCoverLetterFile = () => {
-    return new Promise((resolve) => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = ".txt,text/plain";
-
-      input.onchange = () => {
-        const file = input.files?.[0];
-
-        if (!file) {
-          resolve(null);
-          return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = String(reader.result || "");
-          file.text().then((text) => {
-            resolve({
-              fileName: file.name,
-              mimeType: file.type || "text/plain",
-              contentBase64: result.includes(",") ? result.split(",")[1] : result,
-              text
-            });
-          });
-        };
-        reader.onerror = () => resolve(null);
-        reader.readAsDataURL(file);
-      };
-
-      input.click();
-    });
+  const isProfileComplete = (profile) => {
+    return Boolean(profile?.phone && profile?.location && profile?.education && profile?.cvUrl);
   };
 
   const handleApply = async (job) => {
@@ -173,17 +144,18 @@ function JobsContent() {
       return;
     }
 
-    const coverLetterFile = await chooseCoverLetterFile();
+    const profileRes = await getMyProfile();
+    const profile = profileRes.data;
 
-    if (!coverLetterFile) {
-      setApplyMessage("Please select a cover letter .txt file.");
+    if (!isProfileComplete(profile)) {
+      window.alert("Please complete your candidate profile and upload your CV before applying.");
+      setApplyMessage("Candidate profile is not completed.");
       return;
     }
 
     const res = await applyToJob({
       jobId: job.id,
-      coverLetter: coverLetterFile.text,
-      coverLetterFile
+      coverLetter: ""
     });
 
     if (res.success === false) {

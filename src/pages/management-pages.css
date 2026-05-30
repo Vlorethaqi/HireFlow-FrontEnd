@@ -68,7 +68,8 @@
 
 .management-input,
 .management-select,
-textarea.management-input {
+textarea.management-input,
+.management-file-field {
   width: 100%;
   min-width: 170px;
   min-height: 42px;
@@ -80,6 +81,18 @@ textarea.management-input {
   box-shadow: var(--shadow-sm);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.management-file-field {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.management-file-field input {
+  display: none;
 }
 
 .management-field-wide {
