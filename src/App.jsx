@@ -15,6 +15,7 @@ import SavedJobs from "./pages/SavedJobs.jsx";
 import Skills from "./pages/Skills.jsx";
 import Users from "./pages/Users.jsx";
 import "./index.css";
+import Notification from "./pages/Notification";
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -65,6 +66,8 @@ function App() {
 
         <nav className="app-nav">
           <NavLink to="/jobs">Jobs</NavLink>
+
+          {user && <NavLink to="/notifications">Notifications</NavLink>}
 
           {user?.role === "CANDIDATE" && (
             <>
@@ -131,6 +134,8 @@ function App() {
 
         <Route path="/users" element={adminRoute(<Users />)} />
         <Route path="/companies" element={adminRoute(<Companies />)} />
+
+        <Route path="/notifications" element={<Notification />} />
       </Routes>
     </div>
   );
