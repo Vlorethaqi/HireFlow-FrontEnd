@@ -3,6 +3,7 @@ import {
   analyzeApplication,
   createApplicationResponse,
   createApplicationReview,
+  getAiJob,
   getApplicationStatuses,
   getCompanyApplications,
   updateApplicationStatus
@@ -91,7 +92,27 @@ export default function HRReview() {
 
   const handleAi = async (application) => {
     const res = await analyzeApplication(application.id);
-    setAnalysis(res.data || res);
+    const job = res.data;
+
+    if (!job?.id) {
+      setAnalysis(res.data || res);
+      return;
+    }
+
+    setMessage("AI analysis started in the background.");
+    setAnalysis(job);
+
+    const intervalId = window.setInterval(async () => {
+      const jobRes = await getAiJob(job.id);
+      const latestJob = jobRes.data || jobRes;
+
+      setAnalysis(latestJob);
+
+      if (["COMPLETED", "FAILED"].includes(latestJob.status)) {
+        window.clearInterval(intervalId);
+        setMessage(latestJob.status === "COMPLETED" ? "AI analysis completed." : "AI analysis failed.");
+      }
+    }, 1500);
   };
 
   return (

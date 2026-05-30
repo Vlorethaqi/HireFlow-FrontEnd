@@ -51,3 +51,8 @@ export async function analyzeApplication(applicationId) {
   const res = await api.post(`/ai/analyze-application/${applicationId}`);
   return res.data;
 }
+
+export async function getAiJob(jobId) {
+  const res = await api.get(`/ai/jobs/${jobId}`);
+  return res.data;
+}
