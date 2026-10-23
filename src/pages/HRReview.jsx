@@ -7,7 +7,7 @@ import {
   getApplicationStatuses,
   getCompanyApplications,
   updateApplicationStatus
-} from "../services/applicationService";
+} from "../services/applicationservice.js";
 import "./management-pages.css";
 
 export default function HRReview() {
