@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { applyToJob } from "../services/applicationService";
+import { applyToJob } from "../services/applicationservice.js";
 import { getMyProfile } from "../services/candidateProfileservice";
 import { getJobs } from "../services/jobService";
 import { saveJob } from "../services/savedJobService";

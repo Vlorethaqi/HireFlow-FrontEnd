@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMyApplications } from "../services/applicationService";
+import { getMyApplications } from "../services/applicationservice.js";
 import "./management-pages.css";
 
 export default function MyApplications() {
