@@ -1,7 +1,10 @@
+
 import axios from "axios";
 
+const API_URL = "https://hireflow-backend-4b0o.onrender.com";
+
 const api = axios.create({
-  baseURL: "http://localhost:3000"
+  baseURL: API_URL
 });
 
 let refreshRequest = null;
@@ -34,9 +37,10 @@ api.interceptors.response.use(
     originalRequest._retry = true;
 
     try {
-      refreshRequest = refreshRequest || axios.post("http://localhost:3000/auth/refresh", {
-        refreshToken
-      });
+      refreshRequest = refreshRequest || axios.post(
+        `${API_URL}/auth/refresh`,
+        { refreshToken }
+      );
 
       const { data } = await refreshRequest;
       refreshRequest = null;

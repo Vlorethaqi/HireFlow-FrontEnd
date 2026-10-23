@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSavedJobs, unsaveJob } from "../services/savedJobservice";
+import { getSavedJobs, unsaveJob } from "../services/savedJobService.js";
 import "./management-pages.css";
 
 export default function SavedJobs() {

@@ -5,7 +5,7 @@ import CandidateProfile from "./pages/CandidateProfile.jsx";
 import Companies from "./pages/Companies.jsx";
 import CreateCompany from "./pages/CreateCompany.jsx";
 import CreateJob from "./pages/CreateJob.jsx";
-import Departments from "./pages/Departments";
+import Departments from "./pages/Departments.jsx";
 import HRReview from "./pages/HRReview.jsx";
 import Jobs from "./pages/Jobs.jsx";
 import Login from "./pages/Login.jsx";
@@ -15,7 +15,7 @@ import SavedJobs from "./pages/SavedJobs.jsx";
 import Skills from "./pages/Skills.jsx";
 import Users from "./pages/Users.jsx";
 import "./index.css";
-import Notification from "./pages/Notification";
+import Notification from "./pages/Notification.jsx";
 import { getNotifications } from "./services/notificationService";
 
 function App() {
